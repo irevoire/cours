@@ -649,4 +649,47 @@ git rebase echo
 git push # pas obligatoire
 ```
 
+### Git FAQ
+
+#### Je n'arrive pas a `git push`
+
+La raison la plus commune c'est qu'il y a des choses en ligne que tu n'as pas
+localement sur ton ordinateur.
+Le message d'erreur typique pour ce cas là devrait être suivie de cet "indice" :
+```
+error: failed to push some refs to 'https://github.com/irevoire/cours.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+```
+
+Dans ce cas là il y a deux solutions, si tu viens de créer le projet et que le
+contenu en ligne ne t'importe pas tu peux rajouter l'option `--force` au
+`push`, ça donnerait par exemple `git push -u origin main --force`.
+
+> [!CAUTION]
+> En faisant ça le code en ligne sera réellement supprimé. Si tu travaillais
+> avec quelqu'un d'autre sur le projet ça peut avoir de réelle conséquences.
+> En général tu ne veux faire ça presque que lorsque tu viens de créer un repo
+> et que sans faire exprès tu as demandé a github de créer un README ou de
+> mettre un fichier de licence.
+
+La majorité du temps ça tu rencontreras cette erreur parce que ;
+- Une autre personne a travaillé en ton absence et rajouté du code sur cette
+  branche.
+- Tu as deux dossiers qui pointent vers le même repository et l'un d'eux a été
+	mis à jour mais pas le second.
+- Tu as changé d'ordinateur et oublié de `pull` les nouveaux changement avant
+	de recommencer a travailler.
+
+Dans tous ces cas là ce que tu veux c'est de récupérer le code en ligne puis
+reprendre ton travail par dessus.
+La commande pour faire ça est `git pull --rebase`.
+Git va prendre tous les commits que tu as fait localement sur ta branche et qui
+ne sont pas en ligne. Les mettres de coté, ensuite faire un `git pull` pour
+mettre ta branche a jour avec ce qui existe en ligne et finalement recréer tes
+commits par dessus la branche mises à jours.
+À ce moment là il est possible que tu aies des conflits a résoudre.
+
 ## jj
