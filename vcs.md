@@ -535,6 +535,64 @@ git push origin kefir
 Où `origin` peut être modifié par n'importe quelle remote et `kefir` par
 n'importe quel nom de branche.
 
+## Créer des commits
+
+L'action qu'on va le plus utiliser avec `git` c'est le fait de créer des
+commits.
+Il y a quelques étapes a suivre pour créer un commit ;
+
+### Décider du diff qu'on va mettre dans notre commit
+
+La chose la plus importante d'un commit c'est évidemment le diff qu'il
+contient.
+Par défaut le diff est vide et c'est a nous de lui ajouter du contenu.
+La commande `git add path/to/file` permet de rajouter un fichier au diff.
+- Si le fichier n'existait pas il sera créé
+- Si le fichier existe déjà c'est simplement les changements entre l'ancienne
+	version et la nouvelle qui sera ajouté
+
+> [!NOTE]
+> Si un fichier a été supprimé il faut quand même l'ajouter au diff avec la
+	même commande.
+
+On peut également rajouter des dossiers, ou même le dossier courant avec
+`git add .`.
+
+Pour rajouter des parties de fichier la commande `git add -p` existe également,
+`git` va proposer différent changement en mode interactif et nous laisser
+l'option de les ajouter ou non au commit qu'on va créer ensuite.
+
+Si l'on a ajouté un fichier par erreur on peut annuler son ajout avec la
+commande `git reset path/to/file`.
+
+> [!IMPORTANT]
+> Les fichiers qui ont été ajouté un jour dans `git` via la commande `add`
+> sont considéré comme "tracké".
+
+Pour éviter de tracker des fichiers par erreur il est considéré de rajouter un
+fichier `.gitignore` a la racine du projet.
+Par exemple le fichier `.DS_Store` généré par macOS ne sert a rien et devrait
+être ignoré.
+
+### Créer le commit
+
+Et finalement la dernière étape, créer le commit.
+Si le message est simple on peut créer le commit avec la commande ;
+`git commit -m "La description du commit"`
+
+Si le message est long il est aussi possible de juste écrire ;
+`git commit`
+Ensuite `git` va ouvrir un éditeur de texte et te laisser écrire ton message.
+
+Une dernière manière plus rapide encore consiste a faire le `git add` et le
+`git commit` en une étape avec la commande `git commit -a` (ou
+`git commit -am "description"`).
+Puisqu'on a pas choisi nous même les changements a rajouter, `git` va utiliser
+tous les changements effectué sur les fichiers tracké automatiquement.
+
+> [!TIP]
+> Ces changements correspondent a la commande `git diff`.
+
 ## Manipuler les branches
 
 Comme dit plus tôt, avec `git` tout le travail est stocké sur des branches.
