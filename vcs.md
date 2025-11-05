@@ -750,4 +750,660 @@ mettre ta branche a jour avec ce qui existe en ligne et finalement recréer tes
 commits par dessus la branche mises à jours.
 À ce moment là il est possible que tu aies des conflits a résoudre.
 
-## jj
+# Jujitsu (`jj`)
+
+Jusqu'à présent j'ai vaguement mentionné `jj` mais je n'ai jamais expliqué ce
+que c'était ni ses différence avec `git`.
+
+`jj` est un vcs complètement différent de `git` mais qui sait utiliser le
+système de commit et de branche comme base pour stocker ses changements.
+Ce qui le rends complètement compatible avec `git` et donc github ou gitlab.
+Ça permet aussi de l'utiliser dans ton coin sans que tes collègues sachent
+que tu l'utilises. Tu peux choisir ce que tu préfères.
+
+Mon avis c'est que `jj` est plus simple a utiliser mais également plus
+puissant. Et comme `jj` est beaucoup plus moderne le nom des commandes est
+beaucoup plus simple a retenir et elles sont plus simple a utiliser.
+
+> [!NOTE]
+> `git` est sorti en 2005 ! Le développement de `jj` à commencé fin 2020 en
+	comparaison.
+
+> [!TIP]
+> Les commandes de `jj` sont composées de "sous commandes", par exemple la
+> commande `jj git` permet d'exécuter beaucoup d'opération liée au `.git`.
+> Pour obtenir l'aide sur cette commande on peut entrer simplement la commande
+> `jj git` dans le terminal qui va automatiquement afficher l'aide. Ou de
+> manière générale on peut ajouter `--help` à n'importe quelle commande.
+
+## Les points commun et différences entre `jj` et `git`
+
+### Un nouveau concept, les changes
+
+Avec `jj` même si les commits de `git` existent toujours puisque c'est ce qu'on
+va mettre en ligne, on ne les manipules pas en général. À la place on va
+manipuler des "changes" et il est important de faire la distinction entre les
+deux puisqu'il ont des identifiants différent.
+Comme un commit, un change contient un ou des auteurs, un identifiant, une
+date, une description et possiblement une signature cryptographique.
+Mais contrairement au commit, l'identifiant du change n'es pas basé sur ses
+"parents".
+Ce qui veut dire que l'on peut déplacer ou modifier un change sans avoir a le
+recréer. Son identifiant restera le même et `jj` s'occupera de recréer les
+"vrai" commits de `git` nécessaire pour nous automatiquement sans qu'on s'en
+soucie.
+
+### Tous les fichiers sont tracké
+
+Dans `git` par défaut aucun fichier n'est tracké, il faut les ajouter soit même
+avec la commande `git add`.
+Dans `jj` par défaut tous les fichiers sont toujours tracké et pour en ignorer
+certains il faut les ajouter au fichier `.gitignore`.
+
+### Tout le travail fait toujours parti d'un change
+
+Contrairement a `git` où le travail courant qu'on est entrain d'effectuer n'est
+pas versionné dans un commit, dans `jj` on est toujours sur un change, il peut
+ne pas avoir de nom mais il aura toujours un identifiant et ne sera jamais
+perdu.
+
+### L'état du projet est versionné
+
+Avec `git`, comme on a vu plus tôt on versionne des fichiers, du code, du texte
+ou n'importe quoi qu'on mette dans le dossier et sur lequel on fait la commande
+`git add`.
+`jj` va plus loin et versionne également l'état du projet. Ce qui veut dire que
+si j'effectue une action et que je me trompe, il sera possible de remettre le
+projet dans l'état où il se trouvait avant notre erreur.
+Il devient alors presque impossible de perdre du travail contrairement a `git`.
+Dans le pire des cas ou pourra toujours remettre le projet dans l'état où il se
+trouvait avant notre erreur.
+
+Il devient alors agréable de se tromper puisque dans le pire des cas on aura
+perdu quelques minutes et dans le meilleur des cas on aura appris quelque
+chose.
+
+### Les conflits ne bloquent pas le projet
+
+`jj` est capable de gérer les conflits comme des "changes" presque normaux. Ils
+sont marqué comme contenant un conflit mais il n'y a pas besoin de le résoudre
+dans l'instant.
+Contrairement a `git` on peut continuer son travail ailleur, aller voir
+d'autres changes, faire des rebases etc sans être bloqué parce qu'un conflit
+est en cours.
+
+### Les branches n'existent pas
+
+On a vu que `git` ajoutait toujours les commits sur des branches, dès qu'on
+essaie de travailler sans branches on reçoit des warnings sur chaque commande
+et il n'est pas possible de partager son code en ligne.
+Ensuite on se retrouve a devoir manipuler ces branches pour les faires
+représenter ce que l'on souhaite partager.
+
+`jj` à la place met plutôt l'accent sur les changes individuel. Il n'y a plus
+de branche, on manipule l'arbre de change directement pour obtenir ce qu'on
+souhaite et lorsque l'on souhaite partager du code on utilise des "bookmarks".
+
+Un "bookmarks" est représenté dans `git` comme une branche, mais contrairement
+a une branche, il représente l'état du projet a un instant T et ne se déplace
+pas automatiquement à chaque fois qu'on rajoute un change.
+C'est bien plus proche d'un `tag` dans `git` que d'une branche finalement mais
+ça reste une branche pour faciliter le partage de travail avec les autres.
+
+La manière de travailler va donc légèrement différer de ce qu'on aurait fait
+avec `git`.
+Au lieu de ;
+1. Se déplacer sur la branche que l'on souhaite avoir comme base avec un
+	`git checkout base-branch`
+2. Puis de créer une branche qui va représenter le travail qu'on est entrain
+	d'effectuer avec `git checkout -b nouvelle-branche`
+3. De rajouter ses changements sous forme de commit
+4. Et finalement de mettre en ligne son code avec un `git push`
+
+On va plutôt fonctionner dans l'autre sens ;
+1. On créé un nouveau changement qui prends la bookmark comme parent avec
+	`jj new base-bookmark`
+2. On rajoute nos changes
+3. On créé la bookmark que l'on souhaite mettre en ligne avec
+	`jj bookmark create nouvelle-bookmark`
+4. On met en ligne la bookmark avec `jj git push`
+
+## Créer son projet
+
+Pour créer son projet c'est comme dans `git`, on va lancer la commande
+`jj git init`.
+Il faut préciser `git` parce que `jj` n'est pas obligé d'utiliser `git`.
+Cette commande va créer un dossier `.git` et `.jj` qu'il ne faut surtout
+pas modifier soit même.
+
+## Travailler avec un autre projet distant
+
+La gestion des bookmarks se passe exactement comme avec `git`.
+Pour accéder aux remotes on va utiliser la sous commande `jj git remote`.
+On peut ensuite y ajouter :
+- `list` pour voir toutes les remotes.
+- `add` pour rajouter une remote.
+- `remove` pour supprimer une remote.
+
+## Si le projet existe déjà
+
+On peut simplement le cloner avec `jj git clone`
+
+## Mettre en ligne ses changements
+
+Pareil que pour `git` sauf qu'on précède la commande de `jj` :
+```bash
+jj git push
+# ou
+jj git push -u origin kefir
+```
+
+## Manipuler les bookmarks
+
+Comme dit précédemment, les `jj` ne fonctionne pas avec des branches mais avec
+des "bookmarks". Elle seront convertie en branches `git` en interne et quand on
+met le code en ligne pour ceux qui utilisent juste `git` sans `jj`.
+
+Il n'y a pas de question "d'aller" sur une branche, de faire avancer une
+branche, de la rebase ou quoi que ce soit. On fera toutes ces opérations
+directement sur des changes.
+
+### Créer une nouvelle bookmark
+
+```bash
+jj bookmark create kefir -r <change-id>
+```
+
+Si on ne précise pas le `-r`, la bookmark sera créé a l'endroit ou on se trouve
+actuellement.
+
+Il est assez fréquent de vouloir créer la bookmark juste avant notre position
+actuelle, on peut donc écrire :
+```bash
+jj bookmark create kefir -r @-
+```
+
+### Déplacer une bookmark déjà existante
+
+Puisque les bookmarks ne se déplacent pas automatiquement en suivant le dernier
+commit on va souvent devoir les déplacer juste avant de pousser les changements
+en ligne.
+
+On peut le faire avec la commande `jj bookmark move`. Le reste de la syntaxe
+est identique. Attention cependant, pour déplacer la bookmark **avant** notre
+position actuelle (comme on ferait avec un `@-`) il faut rajouter le flag
+`--allow-backwards` (ou `-B` pour la version courte).
+
+La commande complète donnerait donc :
+```bash
+jj bookmark move kefir -r @- --allow-backwards
+# Ou en abbrégé
+jj b m kefir -r @- -B
+```
+
+> [!TIP]
+> Il y a également la commande `jj bookmark set` qui existe pour déplacer
+> **ou** créer une nouvelle bookmark si elle n'existe pas déjà
+
+## Manipuler des changes
+
+La majorité des opérations qu'on va effectuer avec `jj` sont donc des
+manipulations de l'arbre qui stocke les changes. (ou de l'historique pour `git`)
+
+### Supprimer un change
+
+La commande pour supprimer des changes s'appelle `abandon`.
+Il faut préciser l'identifiant du change derrière.
+La commande complète ressemblera donc à ;
+```bash
+jj abandon <identifiant-de-change>
+```
+
+Pour supprimer le travail courant par exemple, l'équivalent de
+`git reset --hard HEAD`, on fait `jj abandon @`.
+
+> [!TIP]
+> Si on omet de préciser l'identifiant du change c'est par défaut `@` qui sera
+> précisé. On peut donc écrire simplement `jj abandon`.
+
+### Créer un change
+
+Comme nous avons plus tôt, dans `jj` on est **toujours** entrain de modifier un
+change. Ce qui veut dire que le change contenant notre travail courant existe
+déjà.
+
+#### Nommer le change courant
+
+Avant d'en créer un nouveau on veut en général décrire le change courant via la
+commande `jj describe`.
+Comme dans `git` on peut écrire `-m` pour mettre un message rapide sous ouvrir
+d'éditeur de texte.
+
+#### Créer un change
+
+Pour créer un nouveau change c'est la commande `jj new` qu'il faut exécuter.
+Un nouveau change vide sera généré et notre position ira automatiquement dessus.
+
+#### Créer et nommer un change en une seule commande
+
+Pour nommer et créer un nouveau change vide en une seule commande on peut
+utiliser `jj commit` (qui supporte également le `-m`) :
+```bash
+jj describe -m "hello"
+jj new
+# est strictement équivalent à
+jj commit -m "hello"
+```
+
+Mais la commande `commit` permet de faire bien plus que ça, elle permet
+également de choisir quel changement on souhaite intégrer au commit.
+Par exemple en écrivant ce document je me suis souvenu de détails que je
+voulais ajouter a la partie sur `git` a de nombreuses reprise alors que je
+n'avais pas encore commit la partie sur `jj`. Au lieu de créer un commit qui
+rajoute tout d'un coup je peux décider quelle lignes ajouter a mon commit avec
+l'argument `--interactive` (ou `-i`).
+
+> [!TIP]
+> Il est également possible de rajouter un fichier entier sans utiliser le mode
+> interactif en ajoutant simplement le chemin du ou des fichiers derrière la
+> commande `commit` comme ça ; `jj commit -m "hello" path/to/a path/to/b`
+
+### Éclater un change en deux
+
+Une autre opération pratique consiste a séparer un change en deux quand on se
+rends compte qu'on a mis trop de contenu dans un change.
+On effectue cette opération avec la commande `jj split`. On peut spécifier
+n'importe quel identifiant de change derrière. Si on ne précise rien alors
+c'est `@` qui sera splitté.
+
+> [!TIP]
+> Cela veut dire que la commande `jj commit -i` est équivalente à la commande
+> `jj split` puisque les deux commandes reviennent a split le changement
+> courant
+
+## Merger plusieurs changes
+
+Évidemment on ne parle pas de branche ici puisque que `jj` ne travaille pas
+avec des branches mais simplement de changes.
+Pour faire l'équivalent d'un `git merge` en fast forward dans `jj` on va
+juste déplacer la bookmark, il n'y a pas besoin de faire un `merge`.
+Mais dans les cas où l'historique a divergé, on va créer un `merge` change qui
+va fusionner plusieurs changes.
+
+Dans `jj` il n'y a pas d'opération particulière pour exprimer un "merge", on
+va plutôt parler de change qui aurait plusieurs parents.
+Par exemple imaginons cette historique :
+```
+B   C
+ \ /
+  A
+```
+
+Pour créer un change de merge entre `B` et `C` on lance la commande ;
+```bash
+jj new B C
+```
+
+et on obtient l'historique suivant :
+
+```
+  D
+ / \
+B   C
+ \ /
+  A
+```
+
+> [!NOTE]
+> Contrairement a `git`, `jj` peut merger plus que deux changes en une fois
+> tout simplement en précisant plus que deux changes : `jj new A B C D`
+
+## Rebaser des changements
+
+Comme avec `git` il arrive qu'on veuille changer la base d'un change.
+
+Pour déplacer un seul change on va devoir spécifier :
+- Le commit "source", celui que l'on veut déplacer
+- Et le commit "destination" celui que l'on veut utiliser comme nouvelle base
+
+Par exemple voilà le commande a exécuter pour transformer l'historique
+ci-dessous :
+```bash
+jj rebase --source M --destination O
+```
+
+```
+O           N
+|           |
+| N         M
+| |         |
+| M         O
+| |    =>   |
+| | L       | L
+| |/        | |
+| K         | K
+|/          |/
+J           J
+```
+
+## Copier un unique changement
+
+Il n'y a pas de commande `cherry-pick` dans `jj` mais il y a une commande
+`duplicate` qui permet, comme son nom l'indique, de dupliquer des changes.
+
+Par défaut `jj` va dupliquer le change courant `@` et nous demande de spécifier
+la `destination`.
+
+L'équivalent de la commande `git cherry-pick abcdef` serait donc
+```bash
+jj duplicate abcdef -d @
+```
+
+## Annuler des erreur et remettre le projet dans son état avant une commande
+
+L'une des forces de `jj` c'est qu'il versionne également l'historique des
+opérations que vous avez fait avec.
+
+La majorité des opérations se passent derrière la sous commande `jj operation`
+(ou `jj op` pour la version courte).
+
+Avec la commande `jj op list` vous pouvez lister toutes les commandes `jj` que
+vous avez fait dans ce projet.
+Chaque opération possède un identifiant que vous pouvez ensuite utiliser pour
+restaurer a un état précédent avec `jj op restore <identifiant>`.
+
+Pour annuler rapidement la dernière commande que vous venez de faire il existe
+également la commande `jj undo`.
+
+## Visualiser l'état du projet
+
+Il y a plusieurs manière de voir dans quel état on se trouve.
+
+### Voir l'historique
+
+Avec la commande `jj log` on visualise l'historique.
+`jj` va surtout se concentrer sur le bout des branches de l'arbre. Pour voir
+tous les changes sans exception vous pouvez préciser les révisions que vous
+souhaitez voir avec en sélectionnant des changements avec l'argument `-r`.
+```bash
+jj log -r ::
+```
+
+Affiche tous les changes sans exception.
+
+Un changement ressemble a ça :
+```
+@  znonkozz irevoire@protonmail.ch 2025-11-06 15:05:36 8566ed46
+│  (no description set)
+○  zpxqrvnq irevoire@protonmail.ch 2025-11-06 01:06:47 main* git_head() 48ebe8c5
+│  Configure the code block to be bash
+```
+
+Le `@` indique que c'est notre position actuelle dans l'historique.
+À la place du `@` on peut également voir le symbole `○` qui indique que le
+change n'as pas encore été mis en ligne.
+Et finalement le dernier symbole possible est le `◆`. Il indique que ce
+changement a été mis en ligne. Lorsqu'on essaie de modifier un de ces
+changement `jj` va nous avertir qu'on risque de modifier un changement que
+quelqu'un d'autre a déjà téléchargé localement sur son ordinateur.
+
+L'identifiant directement après, `znonkozz` ici, indique l'identifiant du
+change.
+Ensuite on peut voir mon mail puis la date et l'heure de création du change.
+Directement après il peut y avoir la liste des bookmarks qui pointent sur ce
+change. Sur mon second change on voit `main` par exemple. Derrière `jj` nous
+montre aussi où se trouve la `HEAD` de `git` avec `git_head()`.
+
+Et finalement l'identifiant du commit du point de vu de `git`.
+
+> [!CAUTION]
+> Il est possible d'utiliser l'identifiant du commit dans les commandes de `jj`
+> mais je n'ai pas bien compris ce que ça fait. Ça cause beaucoup d'erreurs en
+> tout cas donc je conseille de ne jamais l'utiliser et d'uniquement utiliser
+> les identifiants de **changes**
+
+### Voir l'état du change courant
+
+Avec `jj status` (ou `jj st`) on peut voir l'état courant du projet :
+```
+Working copy changes:
+M vcs.md
+Working copy  (@) : znonkozz b94a4837 (no description set)
+Parent commit (@-): zpxqrvnq 48ebe8c5 main* | Configure the code block to be bash
+```
+
+D'abord `jj` nous montre tous les fichiers qui ont été **M**odifié, ici
+uniquement `vcs.md`.
+Ensuite la `working copy` représente le changement courant que nous somme
+entrain de modifier et de créer.
+Et le change/commit précédent.
+
+### Voir le contenu d'un changement
+
+Pour voir le changement courant, `@`. On dispose des commandes ;
+- `jj show`, équivalent de `git show`, il peut être suivi de l'identifiant d'un
+	change., il peut être suivi de l'identifiant d'un change si on ne veut pas
+	voir le courant.
+- `jj diff`, équivalent de `git diff` qui peut être suivi du chemin d'un
+	fichier. On peut également préciser un identifiant avec `-r <identifiant>`
+
+## Refaisons l'exemple du début avec `jj`
+
+Avant de terminer on va refaire l'exemple de luna mais avec `jj` cete fois ci
+et en détaillant toutes les commandes.
+
+### D'abord, la création du projet
+
+Après avoir créé un dossier et s'être déplacé dedans, on va créer le `.git` et
+le `.jj` avec la commande `jj git init`.
+
+### Notre premier change
+
+Ensuite luna va créer son premier fichier, `truc`, avec le texte :
+```
+Okami est le plus beau des chiens
+```
+
+Il n'y a pas besoin de le `git add` puisque `jj` tracke automatiquement tous
+les fichiers du projet. On peut le voir en faisant `jj st` :
+```
+Working copy changes:
+A truc
+Working copy  (@) : nnlpvvol 694718d2 (no description set)
+Parent commit (@-): zzzzzzzz 00000000 (empty) (no description set)
+```
+
+Le fichier `truc` est marqué avec un `A` pour "addition".
+
+Maintenant on créé le changement avec `jj commit -m "init commit"`
+
+### Visualiser notre change
+
+Contrairement a `git`, comme `jj commit` a créé un nouveau change si on lance
+juste la commande `jj show` c'est le changement courant qui sera affiché :
+```
+Commit ID: 7968cd1bf3dac34871741e3e08a2945d63f6157a
+Change ID: qloozloswpxoxpqlyxnuyypzuqymnxvn
+Author   : Tamo <irevoire@protonmail.ch> (2025-11-06 15:47:50)
+Committer: Tamo <irevoire@protonmail.ch> (2025-11-06 15:47:50)
+
+    (no description set)
+```
+
+Le changement courant vient d'être créé et est vide.
+On peut le voir avec `jj log` :
+```
+@  qloozlos luna@okami.dog 2025-11-06 15:47:50 7968cd1b
+│  (empty) (no description set)
+○  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 git_head() a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+Le changement qu'on voulait voir était celui avec l'identifiant `nnlpv` ou
+également `@-` :
+```
+% jj show @-
+Commit ID: a2bc9be5c5b6c436210f89254a84bea7860ac1e8
+Change ID: nnlpvvolynpwrzrnwqzxswxppznssmyo
+Author   : Luna <luna@okami.dog> (2025-11-06 15:45:10)
+Committer: Luna <luna@okami.dog> (2025-11-06 15:47:50)
+
+    init commit
+
+Added regular file truc:
+        1: Okami est le plus beau des chiens
+```
+
+### Luna créé sa bookmark et la mets en ligne
+
+Elle fait la bookmark avec `jj b s main -r @-` (ou
+`jj bookmarks set main -r @-` en version complète)
+
+Puis elle mets son projet en ligne avec `jj git push`.
+
+### Tamo et Sam font leurs changements
+
+Tamo, après avoir cloné le projet de son coté avec la commande `jj git clone`
+change le contenu du fichier `truc` et créé un commit avec
+`jj commit -m "Add the kef"` et sam créé le siens avec
+`jj commit -m "add echo"`.
+
+### Luna souhaite récupérer leurs changements avec un merge
+
+Voilà l'état du projet avec `git log` ;
+```
+○  vzrnssnl sam@echo.dog 2025-11-06 16:04:39 383618fd
+│  add echo
+│ ○  qloozlos irevoire@protonmail.ch 2025-11-06 15:58:11 6547aa54
+├─╯  Add the kef
+@  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 main a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+Contrairement a `git` il n'y a pas besoin de faire un premier `git merge` avec
+le commit de tamo. Si on souhaite déplacer la bookmark `main` dessus on peut
+simplement lancer la commande `jj b s main -r qlooz`.
+Dans notre cas ce que l'on souhaite c'est de créer un change de merge entre
+les changes de sam et tamo, on va donc créer un nouveau change avec leurs
+changes comme parents :
+```bash
+jj new vzrn qloo
+```
+
+`jj` nous indique maintenant qu'il y a un conflit, on peut le voir en faisant
+`jj log` :
+```
+@    tmopwmyn luna@okami.dog 2025-11-06 16:09:04 01b16556 conflict
+├─╮  (empty) (no description set)
+│ ○  qloozlos irevoire@protonmail.ch 2025-11-06 15:58:11 6547aa54
+│ │  Add the kef
+○ │  vzrnssnl sam@echo.dog 2025-11-06 16:04:39 git_head() 383618fd
+├─╯  add echo
+○  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 main a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+`jj` propose la commande `jj resolve` pour résoudre le conflit, mais
+puisqu'elle n'as qu'une granularité au niveau de la ligne c'est plus
+simple d'ouvrir le fichier manuellement et régler le conflit :
+```
+<<<<<<< Conflict 1 of 1
++++++++ Contents of side #1
+Okami et echo sont les plus belle chiennes du monde
+%%%%%%% Changes from base to side #2
+-Okami est le plus beau des chiens
++Okami et kefir sont les plus beau chiens du monde
+>>>>>>> Conflict 1 of 1 ends
+```
+
+Le format est un peu différent de celui de `git`.
+Après avoir résolu le conflit `jj` le détecte automatiquement et on peut
+faire un commit contenant la résolution du conflit avec
+`jj commit -m "merge echo and kefir"`.
+
+Elle peut ensuite déplacer la bookmark `main` sur le commit de merge et la
+mettre en ligne avec la commande `jj b s main -r @- -B` puis `jj git push`.
+
+Voilà l'historique après avoir déplacé la bookmark :
+```
+@  wtpnnsws luna@okami.dog 2025-11-06 16:14:02 00db1545
+│  (empty) (no description set)
+○    tmopwmyn luna@okami.dog 2025-11-06 16:14:02 main git_head() d1ef12fe
+├─╮  merge echo and kefir
+│ ○  qloozlos irevoire@protonmail.ch 2025-11-06 15:58:11 6547aa54
+│ │  Add the kef
+○ │  vzrnssnl sam@echo.dog 2025-11-06 16:04:39 383618fd
+├─╯  add echo
+○  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+### Luna souhaite récupérer leurs changements avec un rebase
+
+> [!TIP]
+> Avant de faire quoi que ce soit je remet le projet dans son état avant le
+> merge.
+> Je commence par retrouver l'identifiant de la dernière commande avant le
+> `jj new vzrn qloo`, en l'occurence c'était `105e289c6b66` chez moi. Puis je
+> lance la commande `jj operation restore 105e289c6b66`.
+
+Après un `jj log` voilà l'état du projet :
+```
+○  vzrnssnl sam@echo.dog 2025-11-06 16:04:39 383618fd
+│  add echo
+│ ○  qloozlos irevoire@protonmail.ch 2025-11-06 15:58:11 6547aa54
+├─╯  Add the kef
+@  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 main a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+Cette fois, au lieu de créer un change de merge on va plutôt changer la base
+du change de sam (`vzrn`) avec la commande :
+```bash
+jj rebase --source vzrn --destination qlooz
+```
+
+Voilà l'historique obtenu en résultat :
+```
+×  vzrnssnl sam@echo.dog 2025-11-06 16:40:29 691b022b conflict
+│  add echo
+○  qloozlos irevoire@protonmail.ch 2025-11-06 15:58:11 6547aa54
+│  Add the kef
+@  nnlpvvol luna@okami.dog 2025-11-06 15:47:50 main a2bc9be5
+│  init commit
+◆  zzzzzzzz root() 00000000
+```
+
+Après avoir réglé le conflit on peut a nouveau déplacer la bookmark et mettre
+les changements en ligne avec `jj b s main -r vzrn` puis `jj git push`.
+
+> [!NOTE]
+> Contrairement a `git` tu peux voir que cette fois ci nous avons déplacé un
+> change mais son identifiant n'as pas changé, il s'appelle toujours `vzrn...`,
+> l'identifiant du commit a droite a changé en revanche.
+
+## jj FAQ
+
+### Quand je fais une commande le résultat est illisible
+
+Par défaut `jj` essaie d'utiliser le "pager" par défaut qui ne supporte pas
+les couleurs. On peut corriger ce problème en utilisant le "pager" proposé
+par `jj` directement avec cette commande :
+
+```bash
+jj config set --user ui.pager :builtin
+```
+
+# FAQ générale pour `git` et `jj`
+
+## Je n'arrive pas a utiliser l'éditeur de texte ouvert par défaut
+
+`git` et `jj` utilisent la variable d'environnement `$EDITOR` pour décider de
+quel éditeur ouvrir.
+Par exemple pour utiliser `vim` comme éditeur de texte vous pouvez écrire la
+commande `export EDITOR=vim`.
