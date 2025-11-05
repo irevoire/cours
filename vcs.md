@@ -94,7 +94,7 @@ index 0000000..9998555
 
 Après avoir stocké quelques données interne sur les fichier stocké on retrouve
 ces lignes:
-```
+```diff
 +++ b/truc
 @@ -0,0 +1 @@
 +Okami est le plus beau des chiens
@@ -114,7 +114,7 @@ précédée d'un `+` sont rajoutée au fichier.
 
 Imaginons que tamo télécharge ce projet et décide de modifier la ligne pour
 y ajouter le kef. Voilà a quoi son commit pourrait ressembler :
-```
+```diff
 commit 4e900683e7c60813dd177f976c0a2f67f1b44aa7
 Author: Tamo <irevoire@protonmail.ch>
 Date:   Tue Nov 4 01:06:01 2025 +0100
@@ -528,8 +528,8 @@ Pour mettre une branche en ligne il suffit d'écrire `git push`. Si l'on as
 pas encore défini de remote par défaut ou que la branche n'existe pas encore
 en ligne `git` risque de demander des précisions. On devra alors écrire la
 commande complète :
-```
-git push origin kefir
+```bash
+git push -u origin kefir
 ```
 
 Où `origin` peut être modifié par n'importe quelle remote et `kefir` par
@@ -615,7 +615,7 @@ Que ce soit pour travailler dessus ou juste en visualiser le contenu il arrive
 qu'on veuille se déplacer sur une autre branche.
 Dans `git` notre `position` actuelle dans l'historique s'appelle `HEAD`.
 Pour déplacer HEAD sur une autre branche on peut utiliser la commande
-```
+```bash
 git checkout kefir
 ```
 
@@ -642,7 +642,7 @@ Si par exemple j'ai fais les commits suivant :
 
 Et que je souhaite supprimer tous les commits `wip` pour les remplacer par
 un seul commit "j'aime les frites" alors je peux écrire simplement :
-```
+```bash
 git reset 9cdd
 git add bidule
 git commit -m "j'aime les frites"
@@ -676,7 +676,7 @@ la branche qui va **recevoir** les changements et ensuite appeler la commande
 `git merge kefir` où "kefir" est le nom de l'autre branche.
 
 Si je souhaite intégrer les changements de `kefir` dans `main` je fais :
-```
+```bash
 git checkout main # on commence par se déplacer au bon endroit
 git merge kefir
 # Ici, si le commit n'est pas fast-forward il faudra régler les conflits et
@@ -697,7 +697,7 @@ tous les commits d'une branches.
 
 Imaginons que je sois dans cette situation et que je veuille rebase les changements
 de la branche `kef` sur la branche `echo` :
-```
+```bash
 # Déjà, HEAD n'est pas au bon endroit donc on commence par se déplacer sur kef
 git checkout kef
 
