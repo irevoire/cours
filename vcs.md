@@ -898,6 +898,12 @@ jj git push
 jj git push -u origin kefir
 ```
 
+## Télécharger les changements en ligne
+
+Contrairement a `git`, on ne peut pas faire de `git pull` puisqu'il n'y a pas
+de branches a mettre à jour. À la place on va faire un `jj git fetch` et on
+pourra travailler directement avec les branches `origin/main`.
+
 ## Manipuler les bookmarks
 
 Comme dit précédemment, les `jj` ne fonctionne pas avec des branches mais avec
@@ -1398,6 +1404,16 @@ par `jj` directement avec cette commande :
 ```bash
 jj config set --user ui.pager :builtin
 ```
+
+### Je reçois l'erreur `Commit xxx is immutable`
+
+Cela signifie que tu essaies de modifier un commit qui a déjà été mis en ligne.
+Si tu le modifie alors qu'une autre personne a téléchargé ce commit localement
+et rajouté du travail par dessus elle risque d'avoir des conflits juste en
+faisant un `jj git fetch`.
+Si tu es sûr de ce que tu fais tu peux rajouter l'argument `--ignore-immutable`
+pour ignorer la protection et avoir le droit de modifier le commit comme tu le
+souhaite.
 
 # FAQ générale pour `git` et `jj`
 
